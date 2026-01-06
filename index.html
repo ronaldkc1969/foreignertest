@@ -257,7 +257,7 @@
             display: flex;
             flex-direction: column;
             gap: var(--space-12);
-            margin-bottom: var(--space-20);
+            margin-bottom: var(--space-12);
         }
 
         .option-btn {
@@ -270,6 +270,7 @@
             transition: all var(--duration-fast) var(--ease-standard);
             font-size: var(--font-size-base);
             color: var(--color-text);
+            width: 100%;
         }
 
         .option-btn:hover {
@@ -295,9 +296,10 @@
         }
 
         .result-box {
-            padding: var(--space-16);
+            padding: var(--space-12);
             border-radius: var(--radius-base);
-            margin-bottom: var(--space-20);
+            margin-top: var(--space-8);
+            margin-bottom: var(--space-8);
             border-left: 4px solid;
         }
 
@@ -313,7 +315,7 @@
 
         .result-text {
             font-weight: var(--font-weight-semibold);
-            margin-bottom: var(--space-8);
+            margin-bottom: var(--space-4);
         }
 
         .explanation {
@@ -323,11 +325,11 @@
 
         .score-summary {
             text-align: center;
-            padding: var(--space-32);
+            padding: var(--space-24);
         }
 
         .score-number {
-            font-size: 48px;
+            font-size: 32px;
             font-weight: var(--font-weight-bold);
             color: var(--color-primary);
             margin-bottom: var(--space-8);
@@ -336,7 +338,7 @@
         .score-text {
             font-size: var(--font-size-lg);
             color: var(--color-text-secondary);
-            margin-bottom: var(--space-24);
+            margin-bottom: var(--space-16);
         }
 
         .category-badge {
@@ -345,48 +347,11 @@
             padding: var(--space-4) var(--space-12);
             border-radius: var(--radius-base);
             font-size: var(--font-size-sm);
-            margin-bottom: var(--space-16);
+            margin-bottom: var(--space-12);
         }
 
         .question-card {
-            border: 2px solid var(--color-border);
-            padding: var(--space-16);
-            margin-bottom: var(--space-16);
-            border-radius: var(--radius-md);
-        }
-
-        .question-card.answered.correct {
-            border-color: var(--color-success);
-            background-color: rgba(var(--color-green-500-rgb), 0.05);
-        }
-
-        .question-card.answered.incorrect {
-            border-color: var(--color-error);
-            background-color: rgba(var(--color-red-500-rgb), 0.05);
-        }
-
-        .question-number-small {
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-8);
-            font-weight: var(--font-weight-medium);
-        }
-
-        .question-answer-indicator {
-            margin-top: var(--space-8);
-            padding-top: var(--space-8);
-            border-top: 1px solid var(--color-border);
-            font-size: var(--font-size-sm);
-        }
-
-        .answer-indicator.correct {
-            color: var(--color-success);
-            font-weight: var(--font-weight-semibold);
-        }
-
-        .answer-indicator.incorrect {
-            color: var(--color-error);
-            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--space-20);
         }
 
         @media (max-width: 768px) {
@@ -399,7 +364,7 @@
             }
 
             .score-number {
-                font-size: 36px;
+                font-size: 28px;
             }
         }
     </style>
@@ -408,27 +373,27 @@
     <div class="container">
         <div class="header">
             <h1>社会福祉士試験 頻出外国人名クイズ</h1>
-            <p style="color: var(--color-text-secondary); margin-top: var(--space-8);">30問出題・選択肢形式</p>
+            <p style="color: var(--color-text-secondary); margin-top: var(--space-8);">
+                30問すべてを一度に表示・各問題は回答後すぐに解答と解説を確認できます
+            </p>
         </div>
 
-        <!-- クイズ画面 -->
+        <!-- クイズ画面（全問表示） -->
         <div id="quiz-screen">
-            <div style="margin-bottom: var(--space-24);">
-                <button class="btn btn--primary" id="submit-all-btn" onclick="submitAllAnswers()">すべての回答を採点する</button>
-            </div>
-            <div id="questions-container"></div>
-            <div style="margin-top: var(--space-24);">
-                <button class="btn btn--primary" id="submit-all-btn-bottom" onclick="submitAllAnswers()">すべての回答を採点する</button>
-            </div>
-        </div>
+            <div class="card">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                </div>
+                <div class="question-number" id="question-number-top">回答済み 0 / 30</div>
+                <div id="questions-container"></div>
 
-        <!-- 終了画面 -->
-        <div id="result-screen" class="hidden">
-            <div class="card score-summary">
-                <h2>クイズ完了！</h2>
-                <div class="score-number" id="final-score">0/30</div>
-                <div class="score-text" id="score-message">お疲れ様でした</div>
-                <button class="btn btn--primary" onclick="location.reload()">もう一度挑戦する</button>
+                <div class="score-summary" style="border-top: 1px solid var(--color-card-border); margin-top: var(--space-16); padding-top: var(--space-16);">
+                    <div class="score-number" id="final-score">0/30</div>
+                    <div class="score-text" id="score-message">まずは各問題に回答してみましょう。</div>
+                    <button class="btn btn--primary btn--full-width" id="recalc-btn">
+                        スコアを再計算する
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -661,150 +626,147 @@
             }
         ];
 
-        let userAnswers = {};
-        let submitted = false;
-
-        function initQuiz() {
-            userAnswers = {};
-            submitted = false;
-            renderAllQuestions();
-        }
+        let answeredState = new Array(quizData.length).fill(false);
+        let selectedAnswers = new Array(quizData.length).fill(null);
 
         function renderAllQuestions() {
             const container = document.getElementById('questions-container');
             container.innerHTML = '';
 
             quizData.forEach((quiz, index) => {
-                const questionCard = document.createElement('div');
-                questionCard.className = 'card question-card';
-                questionCard.id = `question-${index}`;
+                const card = document.createElement('div');
+                card.className = 'question-card';
 
-                const numberDiv = document.createElement('div');
-                numberDiv.className = 'question-number-small';
-                numberDiv.textContent = `問題 ${index + 1} / ${quizData.length}`;
+                const qNumber = document.createElement('div');
+                qNumber.className = 'question-number';
+                qNumber.textContent = `問題 ${index + 1} / ${quizData.length}`;
 
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = 'category-badge';
-                categoryDiv.textContent = quiz.category;
+                const badge = document.createElement('div');
+                badge.className = 'category-badge';
+                badge.textContent = quiz.category;
 
-                const questionDiv = document.createElement('div');
-                questionDiv.className = 'question-text';
-                questionDiv.textContent = quiz.question;
+                const qText = document.createElement('div');
+                qText.className = 'question-text';
+                qText.textContent = quiz.question;
 
-                const labelDiv = document.createElement('div');
-                labelDiv.className = 'field-label';
-                labelDiv.textContent = '選択肢を選んでください';
+                const label = document.createElement('div');
+                label.className = 'field-label';
+                label.textContent = '選択肢を選んでください';
 
                 const optionsDiv = document.createElement('div');
                 optionsDiv.className = 'options';
 
-                quiz.options.forEach((option, optionIndex) => {
-                    const optionBtn = document.createElement('button');
-                    optionBtn.className = 'option-btn';
-                    optionBtn.textContent = option;
-                    optionBtn.id = `q${index}-opt${optionIndex}`;
-                    optionBtn.onclick = () => selectAnswerAll(index, optionIndex);
-                    optionsDiv.appendChild(optionBtn);
+                quiz.options.forEach((opt, optIndex) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'option-btn';
+                    btn.textContent = opt;
+                    btn.addEventListener('click', () => handleSelect(index, optIndex));
+                    optionsDiv.appendChild(btn);
                 });
 
-                questionCard.appendChild(numberDiv);
-                questionCard.appendChild(categoryDiv);
-                questionCard.appendChild(questionDiv);
-                questionCard.appendChild(labelDiv);
-                questionCard.appendChild(optionsDiv);
+                const resultBox = document.createElement('div');
+                resultBox.id = `result-box-${index}`;
+                resultBox.className = 'result-box hidden';
 
-                const indicatorDiv = document.createElement('div');
-                indicatorDiv.className = 'question-answer-indicator';
-                indicatorDiv.id = `indicator-${index}`;
-                indicatorDiv.style.display = 'none';
-                questionCard.appendChild(indicatorDiv);
+                const resultText = document.createElement('div');
+                resultText.id = `result-text-${index}`;
+                resultText.className = 'result-text';
 
-                container.appendChild(questionCard);
+                const explanation = document.createElement('div');
+                explanation.id = `explanation-${index}`;
+                explanation.className = 'explanation';
+
+                resultBox.appendChild(resultText);
+                resultBox.appendChild(explanation);
+
+                card.appendChild(qNumber);
+                card.appendChild(badge);
+                card.appendChild(qText);
+                card.appendChild(label);
+                card.appendChild(optionsDiv);
+                card.appendChild(resultBox);
+
+                container.appendChild(card);
             });
         }
 
-        function selectAnswerAll(questionIndex, optionIndex) {
-            if (submitted) return;
-            userAnswers[questionIndex] = optionIndex;
+        function handleSelect(qIndex, optIndex) {
+            if (answeredState[qIndex]) return;
 
-            const options = document.querySelectorAll(`#question-${questionIndex} .option-btn`);
-            options.forEach((btn, i) => {
+            selectedAnswers[qIndex] = optIndex;
+            answeredState[qIndex] = true;
+
+            const quiz = quizData[qIndex];
+
+            const card = document.getElementsByClassName('question-card')[qIndex];
+            const optionButtons = card.querySelectorAll('.option-btn');
+
+            optionButtons.forEach((btn, index) => {
+                btn.disabled = true;
                 btn.classList.remove('selected');
-                if (i === optionIndex) {
-                    btn.classList.add('selected');
+                if (index === quiz.correct) {
+                    btn.classList.add('correct');
+                }
+                if (index === optIndex && index !== quiz.correct) {
+                    btn.classList.add('incorrect');
                 }
             });
+
+            const isCorrect = optIndex === quiz.correct;
+            const resultBox = document.getElementById(`result-box-${qIndex}`);
+            const resultText = document.getElementById(`result-text-${qIndex}`);
+            const explanation = document.getElementById(`explanation-${qIndex}`);
+
+            if (isCorrect) {
+                resultBox.className = 'result-box correct';
+                resultText.textContent = '✓ 正解！';
+            } else {
+                resultBox.className = 'result-box incorrect';
+                resultText.textContent = `✗ 不正解（正解：${quiz.options[quiz.correct]}）`;
+            }
+            explanation.textContent = quiz.explanation;
+            resultBox.classList.remove('hidden');
+
+            recalcScore();
         }
 
-        function submitAllAnswers() {
-            submitted = true;
+        function recalcScore() {
             let score = 0;
+            let answeredCount = 0;
 
             quizData.forEach((quiz, index) => {
-                const userAnswer = userAnswers[index];
-                const isCorrect = userAnswer === quiz.correct;
-
-                if (isCorrect) {
-                    score++;
-                }
-
-                const questionCard = document.getElementById(`question-${index}`);
-                const indicator = document.getElementById(`indicator-${index}`);
-                const options = questionCard.querySelectorAll('.option-btn');
-
-                options.forEach((btn, i) => {
-                    btn.style.pointerEvents = 'none';
-                    if (i === quiz.correct) {
-                        btn.classList.add('correct');
-                    } else if (i === userAnswer && !isCorrect) {
-                        btn.classList.add('incorrect');
+                if (answeredState[index]) {
+                    answeredCount++;
+                    if (selectedAnswers[index] === quiz.correct) {
+                        score++;
                     }
-                });
-
-                if (isCorrect) {
-                    questionCard.classList.add('answered', 'correct');
-                    indicator.innerHTML = '<span class="answer-indicator correct">✓ 正解</span>';
-                } else {
-                    questionCard.classList.add('answered', 'incorrect');
-                    indicator.innerHTML = `<span class="answer-indicator incorrect">✗ 不正解</span><br>正解：${quiz.options[quiz.correct]}`;
                 }
-                indicator.style.display = 'block';
-                indicator.innerHTML += `<div style="margin-top: var(--space-8);">${quiz.explanation}</div>`;
             });
 
-            document.getElementById('submit-all-btn').style.display = 'none';
-            document.getElementById('submit-all-btn-bottom').style.display = 'none';
+            const percent = Math.round((score / quizData.length) * 100);
+            document.getElementById('final-score').textContent = `${score}/${quizData.length}`;
+            document.getElementById('question-number-top').textContent =
+                `回答済み ${answeredCount} / ${quizData.length}`;
+            document.getElementById('progress-fill').style.width =
+                `${(answeredCount / quizData.length) * 100}%`;
 
-            const resultDiv = document.createElement('div');
-            resultDiv.className = 'card';
-            resultDiv.style.marginTop = 'var(--space-24)';
-            resultDiv.innerHTML = `
-                <h2 style="text-align: center; margin-bottom: var(--space-16);">採点結果</h2>
-                <div style="text-align: center;">
-                    <div class="score-number">${score}/${quizData.length}</div>
-                    <div class="score-text">${getScoreMessage(score, quizData.length)}</div>
-                    <button class="btn btn--primary" onclick="location.reload()">もう一度挑戦する</button>
-                </div>
-            `;
-
-            const container = document.getElementById('questions-container');
-            container.appendChild(resultDiv);
-
-            window.scrollTo(0, 0);
-        }
-
-        function getScoreMessage(score, total) {
-            const percentage = (score / total) * 100;
-            if (percentage >= 80) {
-                return 'excellent！合格基準クリア！';
-            } else if (percentage >= 60) {
-                return '及第点です。復習をお勧めします。';
+            const msgEl = document.getElementById('score-message');
+            if (answeredCount === 0) {
+                msgEl.textContent = 'まずは各問題に回答してみましょう。';
+            } else if (percent >= 80) {
+                msgEl.textContent = `excellent！合格基準クリア！（正答率 ${percent}%）`;
+            } else if (percent >= 60) {
+                msgEl.textContent = `及第点です。弱い人物を重点的に復習しましょう。（正答率 ${percent}%）`;
             } else {
-                return 'もう一度チャレンジしましょう！';
+                msgEl.textContent = `まだ伸びしろがあります。間違えた人物を中心に覚え直しましょう。（正答率 ${percent}%）`;
             }
         }
 
-        initQuiz();
+        document.getElementById('recalc-btn').addEventListener('click', recalcScore);
+
+        renderAllQuestions();
+        recalcScore();
     </script>
 </body>
 </html>
